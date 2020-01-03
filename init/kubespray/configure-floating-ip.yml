@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  gather_facts: false
+  become: no
+  tasks:
+    - name: "Check ansible version >=2.7.8"
+      assert:
+        msg: "Ansible must be v2.7.8 or higher"
+        that:
+          - ansible_version.string is version("2.7.8", ">=")
+      tags:
+        - check
+  vars:
+    ansible_connection: local
+
+- hosts: kube-node
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  tasks:
+    - copy:
+        content: "BOOTPROTO=static\nDEVICE=eth0:1\nIPADDR={{ floating_ip_01 }}\nPREFIX=32\nTYPE=Ethernet\nUSERCTL=no\nONBOOT=yes\n"
+        dest: "/etc/sysconfig/network-scripts/ifcfg-eth0:1"
+        backup: yes
+        owner: root
+        group: root
+        mode: 0644
+    - command: systemctl restart network

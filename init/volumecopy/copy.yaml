@@ -1,0 +1,53 @@
+# Copy some files from host directory to PV
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <TODO>
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: <TODO>
+  name: <TODO>
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: <TODO>
+  storageClassName: csi-cephfs
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: <TODO>
+  name: copy
+spec:
+  template:
+    metadata:
+      name: copy
+    spec:
+      containers:
+      - name: copy
+        image: busybox
+        args:
+          - /bin/sh
+          - -c
+          - cp -a /from/. /to/
+        volumeMounts:
+          - name: from
+            mountPath: /from
+          - name: to
+            mountPath: /to
+      volumes:
+        - name: from
+          hostPath:
+            path: <TODO>
+            type: Directory
+        - name: to
+          persistentVolumeClaim:
+            claimName: <TODO>
+            readOnly: false
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: <TODO>

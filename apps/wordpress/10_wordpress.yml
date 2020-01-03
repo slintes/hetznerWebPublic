@@ -1,0 +1,104 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: wordpress
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  namespace: wordpress
+#  name: wordpress-secrets
+#type: Opaque
+#stringData:
+#  db-password: <WORDPRESS_DB_PWASSWORD>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: wordpress
+  name: wordpress
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+  selector:
+    app: wordpress
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: wordpress
+  name: wordpress-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: csi-cephfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: wordpress
+  name: wordpress
+  labels:
+    run: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+        - env:
+            - name: WORDPRESS_DB_HOST
+              value: mysql.mysql.svc
+            - name: WORDPRESS_DB_NAME
+              value: wordpress
+            - name: WORDPRESS_DB_USER
+              value: wordpress
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-secrets
+                  key: db-password
+          image: wordpress:5.3.2-apache
+          name: wordpress
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: files
+      volumes:
+        - name: files
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
+---
+#apiVersion: extensions/v1beta1
+#kind: Ingress
+#metadata:
+#  namespace: wordpress
+#  name: wordpress
+#  annotations:
+#    cert-manager.io/cluster-issuer: letsencrypt
+#    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#    nginx.ingress.kubernetes.io/from-to-www-redirect: "false"
+#spec:
+#  rules:
+#    - host: <YOUR_WORDPRESS_DOMAIN>
+#      http:
+#        paths:
+#          - path: /
+#            backend:
+#              serviceName: wordpress
+#              servicePort: 80
+#  tls:
+#    - hosts:
+#        - "<YOUR_WORDPRESS_DOMAIN>"
+#      secretName: wordpress-tls

@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: test
+  name: test-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: csi-cephfs
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: test
+  name: create-www-content-job
+spec:
+  template:
+    metadata:
+      name: create-www-content
+    spec:
+      containers:
+      - name: create-www-content
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - echo "Hello from Rook storage!" > /www/index.html
+        volumeMounts:
+        - name: www
+          mountPath: /www
+      volumes:
+      - name: www
+        persistentVolumeClaim:
+          claimName: test-pvc
+          readOnly: false
+      restartPolicy: Never
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: test
+  name: test-nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: test-nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: www
+        persistentVolumeClaim:
+          claimName: test-pvc
+          readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: test
+  name: test-svc
+  labels:
+    run: test-svc
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+  selector:
+    app: test-nginx
+---
+#apiVersion: extensions/v1beta1
+#kind: Ingress
+#metadata:
+#  namespace: test
+#  name: test-ingress
+#  annotations:
+#    cert-manager.io/cluster-issuer: letsencrypt-staging
+#    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#    nginx.ingress.kubernetes.io/from-to-www-redirect: "false"
+#spec:
+#  rules:
+#    - host: <YOUR_TEST_DOMAIN>
+#      http:
+#        paths:
+#          - backend:
+#              serviceName: test-svc
+#              servicePort: 80
+#            path: /
+#  tls:
+#    - hosts:
+#        - <YOUR_TEST_DOMAIN>
+#      secretName: test-cert

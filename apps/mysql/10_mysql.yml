@@ -1,0 +1,74 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: mysql
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  namespace: mysql
+#  name: mysql-secrets
+#type: Opaque
+#stringData:
+#  root-password: <YOUR_MYSQL_ROOT_PASSWORD>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: mysql
+  name: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: mysql
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: csi-cephfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mysql
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - image: mysql:5.7
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: root-password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

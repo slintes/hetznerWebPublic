@@ -1,0 +1,5 @@
+---
+# for CSI
+#kube_feature_gates:
+#  - CSINodeInfo=true
+#  - CSIDriverRegistry=true

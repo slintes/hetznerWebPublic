@@ -1,0 +1,3 @@
+---
+## Floating IPs to be configured on worker nodes
+floating_ip_01: ${FLOAT_IP_01}

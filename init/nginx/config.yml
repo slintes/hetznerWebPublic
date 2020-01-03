@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: ingress-nginx
+  name: nginx-configuration
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+data:
+  proxy-body-size: 128m
+  client-body-buffer-size: 128m
+  client-header-buffer-size: 16k
+  client-max-body-size: 128m
+  http2-max-field-size: "8K"
+  large-client-header-buffers: "4 8K"
+  worker-processes: "2"
+  max-worker-connections: "512"
+  use-gzip: "true"
+  error-log-level: "error"
+  disable-access-log: "false"
+  log-format-upstream: "$status $body_bytes_sent $http_referer"
+  enable-vts-status: "true"
+  hsts: "true"
+  hsts-include-subdomains: "true"
+  hstsMaxAge: "0"

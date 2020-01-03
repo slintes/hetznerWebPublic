@@ -1,0 +1,3 @@
+---
+## NodePort range
+# kube_apiserver_node_port_range: "80-32767"

@@ -1,0 +1,37 @@
+all:
+  hosts:
+    master:
+      ansible_host: ${MASTER_IP_01}
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/.ssh/hetzner-k8s.key
+      ip: 172.30.30.51
+      access_ip: 172.30.30.51
+    worker01:
+      ansible_host: ${WORKER_IP_01}
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/.ssh/hetzner-k8s.key
+      ip: 172.30.30.52
+      access_ip: 172.30.30.52
+    worker02:
+      ansible_host: ${WORKER_IP_02}
+      ansible_user: root
+      ansible_ssh_private_key_file: ~/.ssh/hetzner-k8s.key
+      ip: 172.30.30.53
+      access_ip: 172.30.30.53
+  children:
+    kube-master:
+      hosts:
+        master:
+    kube-node:
+      hosts:
+        worker01:
+        worker02:
+    etcd:
+      hosts:
+        master:
+    k8s-cluster:
+      children:
+        kube-master:
+        kube-node:
+    calico-rr:
+      hosts: {}

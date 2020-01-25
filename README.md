@@ -1,6 +1,6 @@
 # Hetzner Cloud K8s
 
-This installs a 3 node (1 master, 2 workers) k8s cluster on Hetzner Cloud using CentOS 7 VMs.
+This installs a 4 node (1 master, 3 workers) k8s cluster on Hetzner Cloud using CentOS 7 VMs.
 
 ## Initial installation
 

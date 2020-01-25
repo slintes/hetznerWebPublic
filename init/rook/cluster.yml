@@ -19,7 +19,7 @@ spec:
   dataDirHostPath: /var/lib/rook
   skipUpgradeChecks: false
   mon:
-    count: 2
+    count: 3
     allowMultiplePerNode: false
   dashboard:
     enabled: true
@@ -54,10 +54,10 @@ metadata:
 spec:
   metadataPool:
     replicated:
-      size: 2
+      size: 3
   dataPools:
     - replicated:
-        size: 2
+        size: 3
   preservePoolsOnDelete: true
   metadataServer:
     activeCount: 1

@@ -20,11 +20,13 @@ export FLOAT_IP_01=$(jq -r '.resources[] | select(.type == "hcloud_floating_ip" 
 export MASTER_IP_01=$(jq -r '.resources[] | select(.type == "hcloud_server" and .name == "nodes") | .instances[] | select(.index_key == "node01") | .attributes.ipv4_address' tf/terraform.tfstate)
 export WORKER_IP_01=$(jq -r '.resources[] | select(.type == "hcloud_server" and .name == "nodes") | .instances[] | select(.index_key == "node02") | .attributes.ipv4_address' tf/terraform.tfstate)
 export WORKER_IP_02=$(jq -r '.resources[] | select(.type == "hcloud_server" and .name == "nodes") | .instances[] | select(.index_key == "node03") | .attributes.ipv4_address' tf/terraform.tfstate)
+export WORKER_IP_03=$(jq -r '.resources[] | select(.type == "hcloud_server" and .name == "nodes") | .instances[] | select(.index_key == "node04") | .attributes.ipv4_address' tf/terraform.tfstate)
 
 echo "Floating IP: ${FLOAT_IP_01}" | tee ips.txt
 echo "Master IP: ${MASTER_IP_01}" | tee -a ips.txt
 echo "Worker 1 IP: ${WORKER_IP_01}" | tee -a ips.txt
 echo "Worker 2 IP: ${WORKER_IP_02}" | tee -a ips.txt
+echo "Worker 3 IP: ${WORKER_IP_03}" | tee -a ips.txt
 
 (
   cd kubespray
